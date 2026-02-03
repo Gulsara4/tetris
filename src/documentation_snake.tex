@@ -1,0 +1,189 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{keyword}{rgb}{0.36, 0.54, 0.66}
+\definecolor{comment}{rgb}{0.0, 0.5, 0.0}
+\definecolor{string}{rgb}{0.58, 0.0, 0.82}
+
+\lstset{
+  language=C++,
+  keywordstyle=\color{keyword}\bfseries,
+  commentstyle=\color{comment}\itshape,
+  stringstyle=\color{string},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  showstringspaces=false
+}
+
+\title{Документация проекта Snake}
+\author{fearowpi}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Описание проекта}
+Проект реализует игру Snake/Tetris с использованием библиотеки \texttt{ncurses}.  
+Игра поддерживает:
+\begin{itemize}
+    \item управление с клавиатуры,
+    \item отслеживание счета и рекордов,
+    \item динамическое размещение яблок,
+    \item уровни сложности,
+    \item сохранение рекордов в файл.
+\end{itemize}
+
+\section{Файловая структура}
+\begin{itemize}
+    \item \texttt{src/brick_game/snake} — исходные файлы на C++:
+    \begin{itemize}
+        \item \texttt{game.h} — основные функции управления игрой и состояние.
+        \item \texttt{classes\_snake\_apple.h} — классы \texttt{Snake} и \texttt{Apple}.
+        \item \texttt{snake.cpp}
+        \item \texttt{apple.cpp}
+        \item \texttt{functions\_of\_fields.cpp}
+    \end{itemize}
+    \item \texttt{Makefile} — сборка проекта.
+    \item \texttt{FSM\_snake.png} — диаграмма конечного автомата состояний.
+    \item \texttt{highscore\_snake.txt} — файл для хранения рекордов.
+    \item \texttt{documentation\_snake.tex} — документация проекта.
+\end{itemize}
+
+\section{Основные классы}
+
+\subsection{Класс \texttt{Cell}}
+Структура для хранения координат клетки на поле.
+\begin{lstlisting}
+struct Cell {
+  int x;
+  int y;
+};
+\end{lstlisting}
+
+\subsection{Класс \texttt{Snake}}
+\begin{itemize}
+    \item \textbf{Поля:} 
+    \begin{itemize}
+        \item \texttt{std::vector<Cell> body} — тело змеи.
+        \item \texttt{size\_t length\_of\_snake} — длина змеи.
+    \end{itemize}
+    \item \textbf{Методы:} 
+    \begin{itemize}
+        \item \texttt{get\_length\_of\_snake()} — возвращает длину.
+        \item \texttt{increase\_length\_of\_snake()} — увеличивает длину.
+        \item \texttt{advanceHead()} — перемещает голову змеи.
+        \item \texttt{updateTail()} — обновляет хвост змеи.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Класс \texttt{Apple}}
+\begin{itemize}
+    \item \textbf{Поля:} координаты яблока \texttt{x, y}.
+    \item \textbf{Методы:} 
+    \begin{itemize}
+        \item \texttt{getX(), getY()} — получить координаты.
+        \item \texttt{relocate(Snake \&my\_snake)} — случайное перемещение яблока.
+    \end{itemize}
+\end{itemize}
+
+\section{Основные функции}
+
+\subsection{Инициализация}
+\begin{lstlisting}
+void initialization();
+\end{lstlisting}
+- Сбрасывает поле, создает начальную позицию змеи и яблока, считывает рекорд.
+
+\subsection{Обработка ввода пользователя}
+\begin{lstlisting}
+void userInput(UserAction_t action);
+\end{lstlisting}
+- Управляет переходами между состояниями:
+\texttt{State\_start, State\_move, State\_pause, State\_terminate, State\_exit}.
+
+\subsection{Движение змеи: функция \texttt{processSnakeMove}}
+
+
+Главная функция обработки движения змейки.  
+Принимает действие пользователя (\texttt{Up}, \texttt{Down}, \texttt{Left}, \texttt{Right}) и выполняет логику шага игры.
+
+\paragraph{Алгоритм работы:}
+\begin{enumerate}
+  \item Получает текущее состояние змейки и яблока.
+  \item Определяет направление движения по первым двум сегментам тела змеи.
+  \item Запрещает движение в противоположную сторону (например, если змейка движется вверх, нельзя сразу вниз).
+  \item Вычисляет новую позицию головы с помощью функции \texttt{getNextHeadPosition}.
+  \item Проверяет условия:
+  \begin{itemize}
+    \item \texttt{isColliding} --- не столкнулась ли змейка со стеной или своим телом;
+    \item \texttt{checkAppleCollision} --- не съела ли змейка яблоко.
+  \end{itemize}
+  \item Если коллизии нет:
+  \begin{enumerate}
+    \item Перемещает голову (\texttt{advanceHead}).
+    \item Если яблоко не съедено --- убирает хвост (\texttt{updateTail}).
+    \item Если яблоко съедено:
+    \begin{itemize}
+      \item увеличивает длину (\texttt{increase\_length\_of\_snake});
+      \item обновляет счёт и уровень;
+      \item пересчитывает скорость;
+      \item при необходимости обновляет рекорд (\texttt{play\_w\_file}).
+    \end{itemize}
+  \end{enumerate}
+  \item Обновляет игровое поле (\texttt{resetField}, \texttt{fillField}).
+\end{enumerate}
+
+
+\subsection{Работа с полем}
+\begin{lstlisting}
+void resetField();
+void fillField(Snake &snake, const Apple &app);
+void resetDynamicField(int a);
+\end{lstlisting}
+- Сбрасывает или заполняет игровое поле.
+- \texttt{resetDynamicField(0)} — выделяет память.
+- \texttt{resetDynamicField(1)} — освобождает память.
+
+\section{Сборка проекта}
+
+
+
+\begin{itemize}
+  \item \texttt{all} --- сборка проекта (библиотека + бинарник).
+  \item \texttt{install} --- компиляция и установка игры.
+  \item \texttt{uninstall} --- удаление установленного бинарника.
+  \item \texttt{clean} --- очистка временных и объектных файлов.
+  \item \texttt{test} --- сборка и запуск модульных тестов.
+  \item \texttt{dvi} --- генерация PDF-документации из \LaTeX.
+  \item \texttt{dist} --- упаковка проекта в архив \texttt{.tar.gz}.
+\end{itemize}
+
+
+\section{Диаграмма конечного автомата}
+\begin{center}
+\includegraphics[width=0.8\textwidth]{FSM_snake.png}
+\end{center}
+
+\section{Файл рекордов}
+\texttt{highscore\_snake.txt} используется для хранения максимального счета.  
+- Чтение: при старте игры.
+- Запись: при достижении нового рекорда.
+
+\section{Используемые технологии}
+\begin{itemize}
+    \item C++17
+    \item ncurses
+    \item clang-format
+    \item gcov (покрытие тестами)
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,5 @@
+C:/school21/checks/untitled/build/Desktop_Qt_shared_MinGW_w64_MINGW64_MSYS2-Debug/CMakeFiles/snake_gui.dir
+C:/school21/checks/untitled/build/Desktop_Qt_shared_MinGW_w64_MINGW64_MSYS2-Debug/CMakeFiles/edit_cache.dir
+C:/school21/checks/untitled/build/Desktop_Qt_shared_MinGW_w64_MINGW64_MSYS2-Debug/CMakeFiles/rebuild_cache.dir
+C:/school21/checks/untitled/build/Desktop_Qt_shared_MinGW_w64_MINGW64_MSYS2-Debug/CMakeFiles/snake_gui_autogen_timestamp_deps.dir
+C:/school21/checks/untitled/build/Desktop_Qt_shared_MinGW_w64_MINGW64_MSYS2-Debug/CMakeFiles/snake_gui_autogen.dir
